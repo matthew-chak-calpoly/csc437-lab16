@@ -1,35 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from "react";
+import AddTaskForm from "./components/AddTaskForm";
+import TodoItem from "./components/TodoItem";
+import { nanoid } from "nanoid";
+import Modal from "./components/Modal";
+import { ButtonPrimary } from "./components/Buttons";
+
+const INITIAL_TASK_LIST = [
+  { id: "todo-1", name: "Eat", isComplete: false },
+  { id: "todo-2", name: "Sleep", isComplete: false },
+  { id: "todo-3", name: "Repeat", isComplete: false },
+]
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState(INITIAL_TASK_LIST);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  function onNewTask(name) {
+    const newTask = {
+      id: nanoid(),
+      name,
+      isComplete: false,
+    };
+    setTasks([...tasks, newTask]);
+    setIsModalOpen(false);
+  }
+
+  function toggleTaskComplete(id) {
+    const newTasks = tasks.map(task => {
+      if (task.id === id) {
+        return { ...task, isComplete: !task.isComplete };
+      }
+      return task;
+    });
+    setTasks(newTasks);
+  }
+
+  function handleDeleteTask(id) {
+    const newTasks = tasks.filter(task => task.id !== id);
+    setTasks(newTasks);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <main className="m-4"> {/* Reminder: React code uses className instead of class */}
+          <ButtonPrimary onClick={() => setIsModalOpen(true)}>New Task</ButtonPrimary>
+          <section>
+              <h1 className="text-xl font-bold">To do</h1>
+              <ul>
+                  {tasks.map(task => <TodoItem key={task.id} id={task.id} name={task.name} isComplete={task.isComplete} onToggleComplete={toggleTaskComplete} onDelete={handleDeleteTask} />)}
+              </ul>
+          </section>
+
+          {isModalOpen && <Modal title="New task" onClose={() => setIsModalOpen(false)}>
+              <AddTaskForm onNewTask={onNewTask} />
+          </Modal>}
+      </main>
+  );
 }
 
-export default App
+export default App;
